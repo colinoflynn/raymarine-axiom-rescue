@@ -251,6 +251,33 @@ settings put global development_settings_enabled 1
 settings put global adb_enabled 1
 ```
 
+## Enter Bootloader Mode & Recovery
+
+### Using Front Panel
+
+Swiping **right** five times on the power button with the unit off will bring up the recovery menu:
+
+### SD Card Update
+
+You can use this to apply an update from the SD card, the LH4 "update" contains the entire filesystem so it will recover your unit. If this doesn't work, you
+can also use the lower-level bootloader to apply the update file.
+
+
+### Lower-Level Bootloader
+
+Using the lower-level bootloader will ignore the checksum and similar information, so you can
+also use this to reprogram a `.img` file without resigning & repacking into the `.iso` file.
+
+Doing this requires you to use tools for working with the Rockchip 'loader', mainly the RKDevTool described below.
+
+### Internal Method (not recommended)
+
+Shorting the eMMC clock to ground will force the device into "mask ROM" bootloader mode. This is even lower level than the "loader".
+
+![](shortpins.jpg)
+
+The mask rom bootloader will also work with RKDevTool.
+
 ## Recovery using RKDevTool
 
 For this you'll need the Rockchip tools, such as found at https://github.com/radxa/RKTools .
@@ -259,10 +286,7 @@ If your device fails to boot, you can use the low-level
 bootloader to repair it. This is called `RKDevTool` and
 will flash a full system image to the eMMC.
 
-I used RKDevTool v2.4.3. You need to enter bootloader mode (requires opening the unit currently) by shorting the
-eMMC clock to ground:
-
-![](short_pins.jpg)
+I used RKDevTool v2.4.3. You need to enter bootloader mode, either with the front panel button or with internal jumper method.
 
 With this done, power on the unit. It should enter bootloader mode (will come up on USB as a Rockchip bootloader).
 If you've installed the drivers (see the DriverAssitant tool), you can use RKDevTool for Android to "upgrade" the firmare by specifying
