@@ -39,6 +39,8 @@ erase the Raymarine Bootloader (this won't brick the unit, but it will mean you 
 
 ## Adding your own Key for SSH Access
 
+A quick demo of the result of this can be seen in [this YouTube video](https://youtu.be/uBnOP4qZgYk).
+
 The following is the full process I used to add my own SSH key:
 
 ### 1. Extract ISO
