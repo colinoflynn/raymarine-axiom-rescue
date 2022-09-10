@@ -34,7 +34,12 @@ You'll need to use various resources which explain the Rockchip update process, 
 * https://wiki.radxa.com/Rock/flash_the_image
 * Tools you can find on e.g. https://github.com/radxa/RKTools
 
+The bootloader can be entered as well allowing regular Rockchip tools to access the device. Watch out if doing this, as you may
+erase the Raymarine Bootloader (this won't brick the unit, but it will mean you need to use the USB bootloader tools in the future).
+
 ## Adding your own Key for SSH Access
+
+The following is the full process I used to add my own SSH key:
 
 ### 1. Extract ISO
 
@@ -188,7 +193,7 @@ With this the manifest will be accepted and all your modified files.
 The Axiom upgrade GUI expects a `.iso` file on the SDCard.
 To do this, use a program such as [anyburn](https://anyburn.com/index.htm) which can edit an ISO file.
 
-Select `edit ISO`, open the existing .iso file. Then:
+Select `edit image file` from the main menu, open the existing .iso file. Then:
 * Delete 3 files from the ISO: `raymarine_axiom_upgrade-4.00.85.img`, `manifest.xml`, `manifest.md5sum`.
 * Add the replacement files you modified as above.
 * Save the ISO file.
@@ -207,7 +212,10 @@ You can just reboot (no update was done), or at least I was able to.
 
 ## Using SSH Access
 
-What to do with your new SSH access?
+What to do with your new SSH access now that you have it?
+
+One of the first things to do is enable USB debugging mode, so
+you can also access the device via the USB port.
 
 ### Connecting
 
@@ -228,40 +236,60 @@ Where `my_axiom_key` is the private key we generated earlier. If it
 doesn't work but does detect the SSH server, confirm you used the
 correct update file.
 
-### Installing Things
-
-```
-scp -i my_axiom_key something.apk root@192.168.41.1:/sdcard/Downloads/.
-```
-
-Then:
-
-```
-ssh -i my_axiom_key root@192.168.41.1
-
-```
-
-Generally you can use android commands that you'll find available in tutorials mentioning the `adb shell`. Normally it's assumed you are connecting via adb and not just SSHing into the unit. See details below for turning on USB debugging instead, which lets you use `adb` directly instead of teh shell. This is much easier in practice for most
-tasks you need to do.
 
 ### Turning on USB Debugging via ADB
+
+If you turn on USB debugging:
 
 ```
 settings put global development_settings_enabled 1
 settings put global adb_enabled 1
 ```
 
+This should mean you can plug the USB port into a computer, and
+use the adb tools (easier IMO than via SSH).
+
+### Installing Things with SSH
+
+If you don't enable the USB adb, you'll need to copy things to
+the unit first to install them. This can be done with SCP:
+
+```
+scp -i my_axiom_key something.apk root@192.168.41.1:/sdcard/Downloads/.
+```
+
+Then, ssh to the unit & run the install process.
+
+```
+ssh -i my_axiom_key root@192.168.41.1
+pm install /sdcard/Downloads/something.apk
+```
+
+You will find these in the "apps" directory now.
+
+Generally you can use android commands that you'll find available in tutorials mentioning the `adb shell`. Normally it's assumed you are connecting via adb and not just SSHing into the unit. See details above for turning on USB debugging instead, which lets you use `adb` directly instead of the shell. This is much easier in practice for most
+tasks you need to do.
+
 ## Enter Bootloader Mode & Recovery
+
+Oops! If you messed up the update (or otherwise want to recover stuff), you can use the bootloader mode most of the time.
 
 ### Using Front Panel
 
-Swiping **right** five times on the power button with the unit off will bring up the recovery menu:
+1. Attach power
+2. Swiping **left** five (or so) times on the power button with the unit off will bring up the recovery menu:
+
+NOTE: In my testing it sometimes seemed sensitive, not sure if the power needs to just be applied or not. 
 
 ### SD Card Update
 
 You can use this to apply an update from the SD card, the LH4 "update" contains the entire filesystem so it will recover your unit. If this doesn't work, you
 can also use the lower-level bootloader to apply the update file.
 
+**NOTE**: The lower-level bootloader (at least when I tried it)
+cause my recovery menu to disappear - instead it now always
+drops into the USB bootloader. Suggest to try using the SD Card
+with a system update before you try the USB bootloader.
 
 ### Lower-Level Bootloader
 
@@ -282,9 +310,9 @@ The mask rom bootloader will also work with RKDevTool.
 
 For this you'll need the Rockchip tools, such as found at https://github.com/radxa/RKTools .
 
-If your device fails to boot, you can use the low-level
-bootloader to repair it. This is called `RKDevTool` and
-will flash a full system image to the eMMC.
+If your device fails to boot, and just the SD card update isn't
+working, you can use the low-level bootloader to repair it.
+his is called `RKDevTool` and will flash a full system image to the eMMC.
 
 I used RKDevTool v2.4.3. You need to enter bootloader mode, either with the front panel button or with internal jumper method.
 
@@ -293,6 +321,10 @@ If you've installed the drivers (see the DriverAssitant tool), you can use RKDev
 the packed `raymarine_axiom_upgrade-4.00.85.img` file.
 
 ![](rktools-fwupdate.png)
+
+**WARNING**: This seems to ERASE the internal Raymarine "recovery bootloader". If you try to enter recovery mode (swipe left 5 times), you won't get the menu anymore. Instead it will just
+start the bootloader. This seems to work fine, just be aware
+that you will lose the recovery menu.
 
 ## Using xrock tools
 
