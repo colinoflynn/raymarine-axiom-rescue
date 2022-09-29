@@ -146,6 +146,8 @@ is all I care about (you could script this to modify any of them):
 <Engineering_Part_No>E70363</Engineering_Part_No>
 ```
 
+**NOTE: See note below, you may wish to simply replace the size/checksum/sig values for all units that share the same image with a global find/replace, so you don't need to worry about the exact engineering PN.**
+
 You'll find three sections that all reference `"http://raymarineupdate.raymarine.com/RaymarineUpgrades/raymarine_axiom_upgrade-4.00.85.img"`, we'll need to update the three fields: `Size`, `MD5_Checksum`, and `SIG_Checksum` so our patched update is accepted.
 
 The first two are easy, run:
@@ -183,6 +185,9 @@ echo "SIG_Checksum=${SIG}"
 I *highly* recommend running the script with the old version of the image file and making sure you get the one that agrees with the manifest file.
 
 If you introduce Windows line-ends it silently causes the script to generate the wrong output. So test it with the known existing file, then go sign your own file.
+
+**NOTE:** You may wish to replace the checksum/md5/size for *all* of the targets using the same image. On a later test it seemed I needed to replace them all for
+the update to work - I'm assuming I wasn't updating the correct target when I first tried (maybe it was reading from a different PN as there are several compatable units?). It's easy enough to just do a global replace all, then you know you've gotten all the units.
 
 ### 10. Update `manifest.md5sum`
 
