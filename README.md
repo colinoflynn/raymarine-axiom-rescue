@@ -90,7 +90,7 @@ mkdir to
 mkdir temp
 mkdir fin
 sudo mount system.img fm -t squashfs -o loop
-sudo mount -t overlay -o lowerdir=fin,upperdir=to,workdir=temp overlay fin
+sudo mount -t overlay -o lowerdir=fm,upperdir=to,workdir=temp overlay fin
 ```
 
 ### 4. Copy required files for resigning
