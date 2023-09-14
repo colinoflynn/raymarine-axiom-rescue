@@ -59,7 +59,7 @@ The `raymarine_axiom_upgrade-4.00.85.img` file is an update file in a rockchip s
 can use tools for this device to extract the interesting
 parts, modify it, and put it back together.
 
-I used a tool called [imgrepackerrk](https://forum.xda-developers.com/t/tool-imgrepackerrk-rockchips-firmware-images-unpacker-packer.2257331/):
+I used a Windows OS tool called [imgrepackerrk](https://forum.xda-developers.com/t/tool-imgrepackerrk-rockchips-firmware-images-unpacker-packer.2257331/):
 
 ```
 imgrepackerrk raymarine_axiom_upgrade-4.00.85.img
@@ -78,11 +78,12 @@ The only one we need to modify is `system.img`.
 If you just want to look around, you can just do the
 following to mount the `system.img`:
 
-`sudo mount system.img /some/mnt/point`
+`sudo mount system.img /some/mnt/point` 
 
 This will only give you read-only access. Dealing with
 the squashfs filesystem is more complicated, but luckily
 this [stackexchange post](https://unix.stackexchange.com/questions/80305/mounting-a-squashfs-filesystem-in-read-write) has the required commands:
+*Note this must be done on a native Linux OS such as an Ubuntu VM.
 
 ```
 mkdir fm
@@ -103,7 +104,7 @@ at `fm/bin/raymarine.cgi-bin.com.raymarine_helperUpgrade`.
 
 Make your own SSH key with:
 ```
-ssh-keygen -t rsa my_axiom_key -C root -b 2048
+ssh-keygen -t rsa -f my_axiom_key -C root -b 2048
 ```
 
 I used `nano` and copied `my_axiom_key.pub` to the end of:
@@ -113,21 +114,25 @@ cat my_axiom_key.pub
 sudo nano fin/etc/security/authorized_keys.default
 ```
 
-(For some reason the normal cat >> didn't work, I didn't investigate as assumed related to overlay etc)
+Or cat directly to the file to prevent typo as root :
+...
+cat my_axiom_key.pub >> fin/etc/security/authorized_keys.default
+...
 
-### 6. Rebuild `system.img` (squashfs)
+
+### 6. Rebuild `system.img` on Linux VM (squashfs)
 
 Again from the stackexchange post, we need to make a new
 squashfs filesystem. First backup the old .img file, then recreate it:
 
 ```
 mv system.img /somewhere/backup/system.img
-sudo mksquashfs fin system.img`
+sudo mksquashfs fin system.img
 ``` 
 
 ### 7. Repack the RockChip update image
 
-Using imgrepackerrk, we'll simply point to the `raymarine_axiom_upgrade-4.00.85.img.dump` folder that it created earlier (and assuming you saved the updated `system.img` directly into it, if not copy if there now):
+Using imgrepackerrk back on Windows, we'll simply point to the `raymarine_axiom_upgrade-4.00.85.img.dump` folder that it created earlier (and assuming you saved the updated `system.img` directly into it, if not copy if there now):
 
 ```
 imgrepackerrk "c:\somewhere\AXIOM_Upgrade_&_Networked_ISOs\ray_LH4_4_00_85_RMK_RVX1000_CPsounders.upgrade\raymarine_axiom_upgrade-4.00.85.img.dump"
@@ -170,7 +175,7 @@ need to insert the right key in place of "????". You'll also find
 this script in the repo.
 
 ```
-#!/system/bin/sh
+#!/bin/bash
 #WARNING: Make sure you don't end up with Windows line-ends (with \r)!! The signature
 #will be invalid
 MAGIC="?????"
@@ -181,6 +186,13 @@ echo "MD5_Checksum=$(md5sum $1)"
 SIG="$(echo -n $MAGIC$FSIZE| cat - $1 | sha256sum - | cut -d' ' -f1)"
 echo "SIG_Checksum=${SIG}"
 ```
+Executing the script recommended to use Linux OS like Ubuntu Desktop:
+
+1. Create sig.sh from above
+2. make script executable sudo chmod +x sig.sh
+3. Run script with image file input value of the original image to validate the key is correct and compare md5sum and signature in the current manifest.md5sum:
+4. sudo ./sig.sh raymarine_axiom_upgrade-4.00.85.img
+5. Once validated run script on new image file and record the new Size,Md5sum and signature and update manifest.md5sum with find and replace ensuring the values are in "quotes".
 
 I *highly* recommend running the script with the old version of the image file and making sure you get the one that agrees with the manifest file.
 
@@ -195,7 +207,7 @@ Open `manifest.md5sum`. Insert the md5sum for `raymarine_axiom_upgrade-4.00.85.i
 
 With this the manifest will be accepted and all your modified files.
 
-### 11. Recreate `.iso`
+### 11. Recreate `.iso` on Windows 
 
 The Axiom upgrade GUI expects a `.iso` file on the SDCard.
 To do this, use a program such as [anyburn](https://anyburn.com/index.htm) which can edit an ISO file.
@@ -273,6 +285,15 @@ pm install /sdcard/Downloads/something.apk
 ```
 
 You will find these in the "apps" directory now.
+
+*Note that Axiom is a 32 bit OS and the only apk packages that will work are the armeabi-v7a.apk architecture.
+
+Also:
+
+When installing via SSH you have to use absolute path:
+
+For example:
+If you cd into /sdcard/Download and execute pm install ./something.apk it will fail with URI error, It must be absolute Ie. pm install /sdcard/Download/something.apk
 
 Generally you can use android commands that you'll find available in tutorials mentioning the `adb shell`. Normally it's assumed you are connecting via adb and not just SSHing into the unit. See details above for turning on USB debugging instead, which lets you use `adb` directly instead of the shell. This is much easier in practice for most
 tasks you need to do.
