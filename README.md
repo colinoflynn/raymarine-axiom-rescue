@@ -115,9 +115,9 @@ sudo nano fin/etc/security/authorized_keys.default
 ```
 
 Or cat directly to the file to prevent typo as root :
-...
+```
 cat my_axiom_key.pub >> fin/etc/security/authorized_keys.default
-...
+```
 
 
 ### 6. Rebuild `system.img` on Linux VM (squashfs)
@@ -293,7 +293,7 @@ Also:
 When installing via SSH you have to use absolute path:
 
 For example:
-If you cd into /sdcard/Download and execute pm install ./something.apk it will fail with URI error, It must be absolute Ie. pm install /sdcard/Download/something.apk
+When you cd into /sdcard/Download and execute pm install ./something.apk it will fail with URI error, It must be absolute Ie. pm install /sdcard/Download/something.apk
 
 Generally you can use android commands that you'll find available in tutorials mentioning the `adb shell`. Normally it's assumed you are connecting via adb and not just SSHing into the unit. See details above for turning on USB debugging instead, which lets you use `adb` directly instead of the shell. This is much easier in practice for most
 tasks you need to do.
