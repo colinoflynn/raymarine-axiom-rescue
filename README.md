@@ -39,6 +39,8 @@ erase the Raymarine Bootloader (this won't brick the unit, but it will mean you 
 
 ## Adding your own Key for SSH Access
 
+**NOTE**: The instructions below were for an older version of LightHouse. See [issue #9](https://github.com/colinoflynn/raymarine-axiom-rescue/issues/9) for some hints contributed about more recent builds.
+
 A quick demo of the result of this can be seen in [this YouTube video](https://youtu.be/uBnOP4qZgYk).
 
 The following is the full process I used to add my own SSH key:
